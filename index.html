@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Packs</title>
+  <style>
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #000000;
+  color: #e8f4ff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#fondo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: radial-gradient(ellipse at top, #001a33 0%, #000000 50%);
+}
+
+header {
+  padding: 2rem;
+  text-align: center;
+  background: rgba(0, 15, 30, 0.6);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 30px rgba(59, 130, 246, 0.1);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.logo img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #3b82f6;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.logo img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 50px rgba(59, 130, 246, 0.8);
+}
+
+.title h1 {
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6, #1d4ed8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
+}
+
+.title p {
+  color: #93c5fd;
+  margin-top: 0.5rem;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+}
+
+main {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+section {
+  display: none;
+  justify-content: center;
+  align-items: flex-start;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+section.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card {
+  background: rgba(0, 20, 40, 0.7);
+  backdrop-filter: blur(30px);
+  border-radius: 24px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 
+              0 0 0 1px rgba(59, 130, 246, 0.2) inset;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.card:hover::before {
+  left: 100%;
+}
+
+h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #60a5fa;
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  font-weight: 600;
+}
+
+.menu-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.menu-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: rgba(0, 40, 80, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 16px;
+  color: #e8f4ff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.menu-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.menu-btn:hover {
+  background: rgba(0, 60, 120, 0.6);
+  border-color: #3b82f6;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+}
+
+.menu-btn svg {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+}
+
+.btn, .btn-back {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 1rem;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before, .btn-back::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before, .btn-back:hover::before {
+  left: 100%;
+}
+
+.btn:hover, .btn-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(59, 130, 246, 0.5);
+}
+
+.btn-back {
+  background: linear-gradient(135deg, #1e40af, #1e3a8a);
+  margin-bottom: 1rem;
+}
+
+.file-input-wrapper {
+  margin: 1.5rem 0;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.file-input-label {
+  display: block;
+  padding: 1.5rem;
+  background: rgba(0, 40, 80, 0.4);
+  backdrop-filter: blur(10px);
+  border: 2px dashed rgba(59, 130, 246, 0.5);
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #93c5fd;
+  font-weight: 500;
+}
+
+.file-input-label:hover {
+  background: rgba(0, 60, 120, 0.5);
+  border-color: #3b82f6;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+  color: #e8f4ff;
+}
+
+input[type="text"], textarea, select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  background: rgba(0, 30, 60, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  color: #e8f4ff;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: rgba(0, 40, 80, 0.6);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #60a5fa;
+  opacity: 0.6;
+}
+
+select {
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(0, 20, 40, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+ul::-webkit-scrollbar {
+  width: 8px;
+}
+
+ul::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+ul::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+ul::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
+ul li {
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+  color: #93c5fd;
+  font-size: 0.9rem;
+}
+
+ul li:last-child {
+  border-bottom: none;
+}
+
+.progress-container {
+  margin: 1.5rem 0;
+  background: rgba(0, 20, 40, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  overflow: hidden;
+  height: 40px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  font-weight: 700;
+  transition: width 0.3s ease;
+  width: 0%;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.file-card {
+  background: rgba(0, 30, 60, 0.5);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.file-card:hover {
+  background: rgba(0, 40, 80, 0.6);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+.file-card h3 {
+  color: #60a5fa;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.file-card p {
+  color: #93c5fd;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.file-card a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+}
+
+.file-card a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+}
+
+.file-card svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
+}
+
+.file-card a svg {
+  width: 16px;
+  height: 16px;
+}
+
+.error-message {
+  background: rgba(30, 30, 60, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+.splash-note {
+  color: #93c5fd;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+footer {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(0, 15, 30, 0.6);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(59, 130, 246, 0.3);
+  margin-top: 4rem;
+  box-shadow: 0 -4px 30px rgba(59, 130, 246, 0.1);
+}
+
+.socials {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.socials a {
+  transition: transform 0.3s ease, filter 0.3s ease;
+  display: block;
+}
+
+.socials img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+.socials a:hover img {
+  transform: scale(1.1) rotate(5deg);
+  border-color: #3b82f6;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+}
+
+footer > div:last-child {
+  color: #93c5fd;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .title h1 {
+    font-size: 1.8rem;
+  }
+
+  .menu-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .brand {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+  </style>
+</head>
+<body>
+  <canvas id="fondo"></canvas>
+
+  <header>
+    <div class="brand">
+      <div class="logo"><img src="NEOMC11.png" alt="logo"></div>
+      <div class="title">
+        <h1>Generador de Packs</h1>
+        <p>By JLMC24 - Galaxia Edition</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="menu" class="menu active">
+      <div class="card">
+        <h2>Generar Archivos</h2>
+        <div class="menu-buttons">
+          <button id="contentBtn" class="menu-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+            </svg>
+            Contents
+          </button>
+          <button id="manifestBtn" class="menu-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V4zm2 2v1h6V6H7zm0 2v1h6V8H7zm0 2v1h6v-1H7z" />
+            </svg>
+            Manifest
+          </button>
+          <button id="splashBtn" class="menu-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM6.75 9.25a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd" />
+            </svg>
+            Splash
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="contentUploader">
+      <div class="card">
+        <h2>Generar contents.json</h2>
+        <button class="btn btn-back" onclick="showMenu()">Volver al Menú</button>
+        <div class="file-input-wrapper">
+          <input type="file" id="carpeta" webkitdirectory directory multiple>
+          <label for="carpeta" class="file-input-label"><span>Seleccionar Carpeta</span></label>
+        </div>
+        <ul id="listaArchivos"></ul>
+        <button class="btn" onclick="generarContents()">Generar</button>
+        <div class="progress-container" id="progressContainer" style="display:none;">
+          <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+        <div id="fileDisplay"></div>
+        <div id="errorContents" class="error-message" style="display:none;"></div>
+      </div>
+    </section>
+
+    <section id="manifestUploader">
+      <div class="card">
+        <h2>Generar manifest.json</h2>
+        <button class="btn btn-back" onclick="showMenu()">Volver al Menú</button>
+        <div class="file-input-wrapper">
+          <input type="file" id="manifestFolder" webkitdirectory directory multiple>
+          <label for="manifestFolder" class="file-input-label"><span>Seleccionar Carpeta</span></label>
+        </div>
+        <ul id="listaArchivosManifest"></ul>
+        <input type="text" id="nombre" placeholder="Nombre del paquete *">
+        <input type="text" id="descripcion" placeholder="Descripción *">
+        <input type="text" id="version" placeholder="Versión (ej: 1.0.0) *">
+        <input type="text" id="minVersion" placeholder="Versión mínima engine (ej: 1.21.0) *">
+        <select id="tipo">
+          <option value="resources">Resource Pack</option>
+          <option value="data">Behavior Pack</option>
+          <option value="skin_pack">Skin Pack</option>
+        </select>
+        <button class="btn" onclick="generarManifest()">Generar</button>
+        <div id="errorManifest" class="error-message" style="display:none;"></div>
+        <div id="manifestDisplay"></div>
+      </div>
+    </section>
+
+    <section id="splashUploader">
+      <div class="card">
+        <h2>Generar splashes.json</h2>
+        <button class="btn btn-back" onclick="showMenu()">Volver al Menú</button>
+        <div class="splash-inputs">
+          <textarea id="splashText" placeholder="Escribe los splashes separados por comas (ej: Bienvenido, Hola Mundo, Diviértete)"></textarea>
+          <div class="splash-note">Separa los splashes con comas</div>
+        </div>
+        <button class="btn" onclick="generarSplashes()">Generar</button>
+        <div id="errorSplashes" class="error-message" style="display:none;"></div>
+        <div id="splashDisplay"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="socials">
+      <a href="www.youtube.com/@NEOMC13"><img src="yt.png" alt="YouTube"></a>
+      <a href="https://www.tiktok.com/@neomc1?_t=ZS-8zlYOLr7AxU&_r=1"><img src="tiktok.png" alt="TikTok"></a>
+      <a href="https://www.instagram.com/neomc12?igsh=MXNqYmcwNHZmOGx3Yg=="><img src="inta.jpg" alt="Instagram"></a>
+    </div>
+    <div>© 2025 JLMC24</div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

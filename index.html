@@ -170,10 +170,23 @@ main {
 .popup h2 {
   font-size: 2rem;
   color: #60a5fa;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   background: linear-gradient(135deg,#60a5fa,#93c5fd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.popup h2 img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(59,130,246,.6);
+  box-shadow: 0 0 20px rgba(59,130,246,.8);
 }
 
 .popup p {
@@ -300,9 +313,12 @@ main {
 
 <div class="overlay" id="firstOverlay">
   <div class="popup">
-    <h2>¿Qué buscas bro?<img src="logo.png" alt="Logo"></h2>
+    <h2>
+      <img src="logo.png" alt="Logo">
+      ¿Qué buscas bro?
+    </h2>
     <p>¿Se te perdió algo por aquí? 👀<br>No te preocupes, todo está bajo control...</p>
-    <button class="popup-btn" onclick="openContentJson()">content.json</button>
+    <button class="popup-btn" onclick="openContentJson()">content.json 📦</button>
     <button class="popup-btn secondary" onclick="openQuePaso()">¿Qué pasó? 🤔</button>
   </div>
 </div>
@@ -319,7 +335,7 @@ main {
 <div class="overlay" id="mantenimientoOverlay">
   <div class="maintenance-page">
     <div class="error404-big">404</div>
-    <img src="https://images.pond5.com/neon-style-robot-404-error-footage-316672983_iconl.jpeg" alt="Robot 404 neon azul animado" class="robot-img">
+    <img src="error.gif" alt="Robot 404 neon azul animado" class="robot-img">
     <h2 class="maintenance-title">Página en Mantenimiento</h2>
     <p>Lo sentimos, el contenido solicitado no está disponible temporalmente.</p>
     <p>La plataforma actual está bajo <strong>mantenimiento programado</strong> para traerte una experiencia superior.</p>

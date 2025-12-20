@@ -17,6 +17,8 @@ body {
   background: #000;
   color: #e8f4ff;
   min-height: 100vh;
+  position: relative;
+  padding-bottom: 100px; /* Espacio para el footer fijo */
 }
 
 #fondo {
@@ -285,6 +287,57 @@ main {
   position: absolute;
   left: 0;
 }
+
+/* ===== FOOTER ESTILOS NUEVOS ===== */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 15, 30, 0.85);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(59,130,246,.4);
+  padding: 1rem;
+  text-align: center;
+  z-index: 40;
+  font-size: 0.9rem;
+  color: #93c5fd;
+}
+
+.socials {
+  margin-bottom: 0.8rem;
+}
+
+.socials a {
+  margin: 0 12px;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.socials a:hover {
+  transform: translateY(-4px) scale(1.1);
+}
+
+.socials img {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(59,130,246,.4);
+  padding: 6px;
+  background: rgba(0,40,80,.4);
+  box-shadow: 0 0 20px rgba(59,130,246,.3);
+  transition: all 0.3s ease;
+}
+
+.socials img:hover {
+  box-shadow: 0 0 35px rgba(59,130,246,.8);
+  border-color: #60a5fa;
+}
+
+footer > div:last-child {
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
 </style>
 </head>
 
@@ -311,6 +364,7 @@ main {
   </div>
 </main>
 
+<!-- Overlays -->
 <div class="overlay" id="firstOverlay">
   <div class="popup">
     <h2>
@@ -348,10 +402,19 @@ main {
       <li>Diseño ultra moderno y optimizado para móviles</li>
       <li>Funciones premium y contenido exclusivo</li>
     </ul>
-    <p>Volveremos pronto con algo épico.<br>Mantente atento a las redes oficiales.</p>
     <button class="popup-btn" onclick="closeAll()">Entendido</button>
   </div>
 </div>
+
+<!-- Footer fijo al final de la página -->
+<footer>
+  <div class="socials">
+    <a href="https://youtube.com/@neomc13" target="_blank"><img src="yt.png" alt="YouTube"></a>
+    <a href="https://www.tiktok.com/@neomc1" target="_blank"><img src="tiktok.png" alt="TikTok"></a>
+    <a href="https://www.instagram.com/neomc12" target="_blank"><img src="inta.jpg" alt="Instagram"></a>
+  </div>
+  <div>© 2025 NEOMC11</div>
+</footer>
 
 <script>
 function openFirstOverlay() {

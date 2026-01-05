@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Unifier - Bedrock JSON Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #0066ff;
+            --dark-blue: #0047b3;
+            --black: #0a0a0a;
+            --success-green: #28a745;
+            --warning-yellow: #ffc107;
+            --blur-bg: rgba(10, 10, 10, 0.85);
+            --card-bg: rgba(20, 20, 30, 0.9);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--black) 0%, var(--dark-blue) 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 102, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            padding: 0.7rem 1.2rem;
+            background: rgba(0, 102, 255, 0.1);
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 102, 255, 0.3);
+        }
+
+        .back-btn:hover {
+            background: var(--primary-blue);
+            transform: translateX(-5px);
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            background: var(--blur-bg);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 102, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #3385ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #a0b0d0;
+            font-size: 1.1rem;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        .info-box {
+            background: rgba(0, 102, 255, 0.1);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-box p {
+            color: #b0c0e0;
+            margin: 0.3rem 0;
+            font-size: 0.95rem;
+        }
+
+        .json-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .json-input-container {
+            position: relative;
+        }
+
+        .json-input-container h3 {
+            color: white;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .json-number {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 1.2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 102, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            background: rgba(0, 102, 255, 0.05);
+        }
+
+        textarea.error {
+            border-color: #dc3545;
+        }
+
+        textarea.success {
+            border-color: var(--success-green);
+        }
+
+        textarea::placeholder {
+            color: #6080a0;
+        }
+
+        .validation-message {
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .validation-message.show {
+            display: block;
+        }
+
+        .validation-message.error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #ff6b7a;
+        }
+
+        .validation-message.success {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            color: #5dd879;
+        }
+
+        .btn {
+            padding: 0.9rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 102, 255, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 102, 255, 0.2);
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        .success-message {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .success-icon {
+            width: 40px;
+            height: 40px;
+            fill: var(--success-green);
+        }
+
+        .preview-section {
+            background: rgba(0, 102, 255, 0.05);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .preview-content {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            color: #b0c0e0;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 102, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        @media (max-width: 968px) {
+            .json-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .main-card {
+                padding: 1.5rem;
+            }
+
+            .action-buttons,
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Volver al inicio
+        </a>
+
+        <header>
+            <h1>JSON Unifier</h1>
+            <p class="subtitle">Fusiona dos archivos JSON de forma inteligente sin duplicados</p>
+        </header>
+
+        <div class="main-card">
+            <div id="inputSection">
+                <div class="info-box">
+                    <p><strong>Cómo funciona la fusión inteligente:</strong></p>
+                    <p>• Se eliminan automáticamente las claves duplicadas</p>
+                    <p>• Las secciones idénticas se unifican en una sola</p>
+                    <p>• Las secciones complementarias se fusionan correctamente</p>
+                    <p>• Los arrays se combinan sin elementos repetidos</p>
+                    <p>• Se valida la estructura JSON antes de fusionar</p>
+                </div>
+
+                <div class="json-inputs">
+                    <div class="json-input-container">
+                        <h3>
+                            <span class="json-number">1</span>
+                            Primer archivo JSON
+                        </h3>
+                        <textarea 
+                            id="json1" 
+                            placeholder='{"content": [{"path": "textures/blocks/dirt.png"}]}'
+                        ></textarea>
+                        <div class="validation-message" id="validation1"></div>
+                    </div>
+
+                    <div class="json-input-container">
+                        <h3>
+                            <span class="json-number">2</span>
+                            Segundo archivo JSON
+                        </h3>
+                        <textarea 
+                            id="json2" 
+                            placeholder='{"content": [{"path": "textures/items/diamond.png"}]}'
+                        ></textarea>
+                        <div class="validation-message" id="validation2"></div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="unifyBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Fusionar JSON
+                    </button>
+                </div>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <div class="success-message">
+                    <svg class="success-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem; color: var(--success-green);">Fusión completada exitosamente</h3>
+                        <p style="color: #b0c0e0; margin: 0;" id="mergeInfo"></p>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <h3>Resultado de la fusión</h3>
+                    <div class="preview-content" id="previewContent"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-success" id="downloadBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        Descargar archivo
+                    </button>
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                        </svg>
+                        Fusionar otros
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="spinner"></div>
+            <h2 style="color: white; margin-bottom: 0.5rem;">Fusionando archivos...</h2>
+            <p style="color: #b0c0e0;">Eliminando duplicados y unificando estructuras</p>
+        </div>
+    </div>
+
+    <div class="modal" id="nameModal">
+        <div class="modal-content">
+            <h3>Nombre del archivo</h3>
+            <p style="color: #b0c0e0; margin-bottom: 1rem;">Ingresa el nombre para el archivo fusionado</p>
+            <input type="text" id="fileNameInput" placeholder="merged" value="merged">
+            <div class="modal-buttons">
+                <button class="btn btn-success" id="confirmDownload" style="flex: 1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    Descargar
+                </button>
+                <button class="btn btn-primary" id="cancelDownload" style="flex: 1;">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const savedAuth = localStorage.getItem('bedrock_auth');
+            
+            if (!savedAuth) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const auth = JSON.parse(atob(savedAuth));
+                if (!auth.user || !auth.access) {
+                    localStorage.removeItem('bedrock_auth');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (auth.access === 'limited') {
+                    alert('No tienes acceso a esta herramienta');
+                    window.location.href = 'index.html';
+                }
+            } catch (e) {
+                localStorage.removeItem('bedrock_auth');
+                window.location.href = 'login.html';
+            }
+        });
+
+        let mergedJSON = null;
+        
+        const json1Input = document.getElementById('json1');
+        const json2Input = document.getElementById('json2');
+        const validation1 = document.getElementById('validation1');
+        const validation2 = document.getElementById('validation2');
+        const unifyBtn = document.getElementById('unifyBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const inputSection = document.getElementById('inputSection');
+        const resultSection = document.getElementById('resultSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewContent = document.getElementById('previewContent');
+        const mergeInfo = document.getElementById('mergeInfo');
+        const nameModal = document.getElementById('nameModal');
+        const fileNameInput = document.getElementById('fileNameInput');
+        const confirmDownload = document.getElementById('confirmDownload');
+        const cancelDownload = document.getElementById('cancelDownload');
+
+        json1Input.addEventListener('input', () => validateJSON(json1Input, validation1));
+        json2Input.addEventListener('input', () => validateJSON(json2Input, validation2));
+        unifyBtn.addEventListener('click', unifyJSON);
+        downloadBtn.addEventListener('click', () => nameModal.classList.add('active'));
+        confirmDownload.addEventListener('click', downloadFile);
+        cancelDownload.addEventListener('click', () => nameModal.classList.remove('active'));
+
+        function validateJSON(textarea, validationDiv) {
+            const text = textarea.value.trim();
+            
+            if (!text) {
+                textarea.classList.remove('error', 'success');
+                validationDiv.classList.remove('show');
+                return null;
+            }
+
+            try {
+                const parsed = JSON.parse(text);
+                textarea.classList.remove('error');
+                textarea.classList.add('success');
+                validationDiv.className = 'validation-message success show';
+                validationDiv.textContent = 'JSON válido';
+                return parsed;
+            } catch (e) {
+                textarea.classList.remove('success');
+                textarea.classList.add('error');
+                validationDiv.className = 'validation-message error show';
+                validationDiv.textContent = `Error: ${e.message}`;
+                return null;
+            }
+        }
+
+        function deepMerge(target, source) {
+            const output = { ...target };
+            
+            for (const key in source) {
+                if (source.hasOwnProperty(key)) {
+                    if (Array.isArray(source[key]) && Array.isArray(output[key])) {
+                        const merged = [...output[key], ...source[key]];
+                        output[key] = Array.from(new Set(merged.map(JSON.stringify))).map(JSON.parse);
+                    } else if (typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key])) {
+                        output[key] = output[key] ? deepMerge(output[key], source[key]) : source[key];
+                    } else {
+                        output[key] = source[key];
+                    }
+                }
+            }
+            
+            return output;
+        }
+
+        function unifyJSON() {
+            const obj1 = validateJSON(json1Input, validation1);
+            const obj2 = validateJSON(json2Input, validation2);
+
+            if (!obj1 || !obj2) {
+                alert('Por favor, corrige los errores en los archivos JSON antes de fusionar');
+                return;
+            }
+
+            loadingOverlay.classList.add('active');
+
+            setTimeout(() => {
+                mergedJSON = deepMerge(obj1, obj2);
+
+                const jsonString = JSON.stringify(mergedJSON, null, 2);
+                previewContent.textContent = jsonString;
+                
+                const keys1 = Object.keys(obj1).length;
+                const keys2 = Object.keys(obj2).length;
+                const mergedKeys = Object.keys(mergedJSON).length;
+                
+                mergeInfo.textContent = `Fusionados correctamente: ${keys1} claves del archivo 1 + ${keys2} claves del archivo 2 = ${mergedKeys} claves únicas`;
+
+                loadingOverlay.classList.remove('active');
+                inputSection.style.display = 'none';
+                resultSection.classList.add('active');
+            }, 1000);
+        }
+
+        function downloadFile() {
+            if (!mergedJSON) return;
+            
+            let fileName = fileNameInput.value.trim() || 'merged';
+            if (!fileName.endsWith('.json')) {
+                fileName += '.json';
+            }
+            
+            const jsonString = JSON.stringify(mergedJSON, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            nameModal.classList.remove('active');
+        }
+
+        fileNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                downloadFile();
+            }
+        });
+    </script>
+</body>
+</html>

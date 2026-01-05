@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Generator - Bedrock JSON Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #0066ff;
+            --dark-blue: #0047b3;
+            --black: #0a0a0a;
+            --success-green: #28a745;
+            --blur-bg: rgba(10, 10, 10, 0.85);
+            --card-bg: rgba(20, 20, 30, 0.9);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--black) 0%, var(--dark-blue) 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(0, 102, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            padding: 0.7rem 1.2rem;
+            background: rgba(0, 102, 255, 0.1);
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 102, 255, 0.3);
+        }
+
+        .back-btn:hover {
+            background: var(--primary-blue);
+            transform: translateX(-5px);
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            background: var(--blur-bg);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 102, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #3385ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #a0b0d0;
+            font-size: 1.1rem;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid rgba(0, 102, 255, 0.3);
+        }
+
+        .preview-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            display: none;
+            max-height: 600px;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .preview-card.active {
+            display: flex;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 102, 255, 0.3);
+        }
+
+        .preview-title {
+            font-size: 1.3rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-indicator {
+            width: 10px;
+            height: 10px;
+            background: var(--success-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .preview-content {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #a0d0ff;
+        }
+
+        .preview-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .preview-content::-webkit-scrollbar-track {
+            background: rgba(0, 102, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .preview-content::-webkit-scrollbar-thumb {
+            background: var(--primary-blue);
+            border-radius: 4px;
+        }
+
+        .json-key {
+            color: #66d9ef;
+        }
+
+        .json-string {
+            color: #a6e22e;
+        }
+
+        .json-bracket {
+            color: #f92672;
+            font-weight: bold;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(0, 102, 255, 0.5);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            background: rgba(0, 102, 255, 0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary-blue);
+            background: rgba(0, 102, 255, 0.1);
+        }
+
+        .upload-zone.active {
+            border-color: var(--success-green);
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            fill: var(--primary-blue);
+        }
+
+        .btn {
+            padding: 0.9rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 102, 255, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 102, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(0, 102, 255, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue), #3385ff);
+            width: 0%;
+            transition: width 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .file-info {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 102, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 102, 255, 0.3);
+        }
+
+        .file-info p {
+            margin: 0.5rem 0;
+            color: #b0c0e0;
+        }
+
+        .file-info strong {
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 102, 255, 0.05);
+            border: 1px solid rgba(0, 102, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #b0c0e0;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        .success-message {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .success-icon {
+            width: 40px;
+            height: 40px;
+            fill: var(--success-green);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .main-card, .preview-card {
+                padding: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Volver al inicio
+        </a>
+
+        <header>
+            <h1>Content Generator</h1>
+            <p class="subtitle">Genera contents.json automáticamente desde tu carpeta de recursos</p>
+        </header>
+
+        <div class="content-grid">
+            <div class="main-card">
+                <div class="upload-zone" id="uploadZone">
+                    <svg class="upload-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V6h5.17l2 2H20v10zm-8-4h2v2h2v-2h2v-2h-2v-2h-2v2h-2z"/>
+                    </svg>
+                    <h3 style="margin-bottom: 1rem; color: white;">Selecciona tu carpeta de recursos</h3>
+                    <p style="color: #b0c0e0; margin-bottom: 1.5rem;">El sistema escaneará todos los archivos y subcarpetas automáticamente</p>
+                    <input type="file" id="folderInput" webkitdirectory directory multiple>
+                    <button class="btn btn-primary" onclick="document.getElementById('folderInput').click()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        Seleccionar carpeta
+                    </button>
+                </div>
+
+                <div class="progress-container" id="progressContainer">
+                    <h3 style="margin-bottom: 1rem; color: white;">Procesando archivos ultra rápido...</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill">0%</div>
+                    </div>
+                    <div class="file-info" id="fileInfo">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="statProcessed">0</div>
+                                <div class="stat-label">Procesados</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="statTotal">0</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="statSpeed">0</div>
+                                <div class="stat-label">Por segundo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-section" id="resultSection">
+                    <div class="success-message">
+                        <svg class="success-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <div>
+                            <h3 style="margin-bottom: 0.5rem; color: var(--success-green);">¡Archivo generado exitosamente!</h3>
+                            <p style="color: #b0c0e0; margin: 0;">Tu archivo contents.json está listo para descargar</p>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-success" id="downloadBtn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                            </svg>
+                            Descargar contents.json
+                        </button>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                            </svg>
+                            Generar otro
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-card" id="previewCard">
+                <div class="preview-header">
+                    <div class="preview-title">
+                        <div class="live-indicator"></div>
+                        Vista previa en tiempo real
+                    </div>
+                    <span style="color: #b0c0e0; font-size: 0.9rem;" id="previewCount">0 archivos</span>
+                </div>
+                <div class="preview-content" id="previewContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const savedAuth = localStorage.getItem('bedrock_auth');
+            
+            if (!savedAuth) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const auth = JSON.parse(atob(savedAuth));
+                if (!auth.user || !auth.access) {
+                    localStorage.removeItem('bedrock_auth');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (auth.access === 'limited') {
+                    alert('No tienes acceso a esta herramienta');
+                    window.location.href = 'index.html';
+                }
+            } catch (e) {
+                localStorage.removeItem('bedrock_auth');
+                window.location.href = 'login.html';
+            }
+        });
+
+        let generatedJSON = null;
+        
+        const folderInput = document.getElementById('folderInput');
+        const uploadZone = document.getElementById('uploadZone');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const fileInfo = document.getElementById('fileInfo');
+        const resultSection = document.getElementById('resultSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewCard = document.getElementById('previewCard');
+        const previewContent = document.getElementById('previewContent');
+        const previewCount = document.getElementById('previewCount');
+        const statProcessed = document.getElementById('statProcessed');
+        const statTotal = document.getElementById('statTotal');
+        const statSpeed = document.getElementById('statSpeed');
+
+        folderInput.addEventListener('change', handleFolderSelect);
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('active');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('active');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('active');
+            const items = e.dataTransfer.items;
+            if (items.length > 0 && items[0].webkitGetAsEntry) {
+                handleDroppedFolder(items);
+            }
+        });
+
+        async function handleDroppedFolder(items) {
+            const files = [];
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i].webkitGetAsEntry();
+                if (item) {
+                    await traverseFileTree(item, '', files);
+                }
+            }
+            if (files.length > 0) {
+                processFiles(files);
+            }
+        }
+
+        function traverseFileTree(item, path, files) {
+            return new Promise((resolve) => {
+                if (item.isFile) {
+                    item.file((file) => {
+                        files.push({
+                            file: file,
+                            path: path + file.name
+                        });
+                        resolve();
+                    });
+                } else if (item.isDirectory) {
+                    const dirReader = item.createReader();
+                    dirReader.readEntries(async (entries) => {
+                        for (const entry of entries) {
+                            await traverseFileTree(entry, path + item.name + '/', files);
+                        }
+                        resolve();
+                    });
+                }
+            });
+        }
+
+        async function handleFolderSelect(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            
+            const fileData = files.map(file => ({
+                file: file,
+                path: file.webkitRelativePath
+            }));
+            
+            processFiles(fileData);
+        }
+
+        function formatJSON(obj) {
+            const jsonString = JSON.stringify(obj, null, 2);
+            return jsonString
+                .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+                .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+                .replace(/\{/g, '<span class="json-bracket">{</span>')
+                .replace(/\}/g, '<span class="json-bracket">}</span>')
+                .replace(/\[/g, '<span class="json-bracket">[</span>')
+                .replace(/\]/g, '<span class="json-bracket">]</span>');
+        }
+
+        function updatePreview(contentArray) {
+            const displayArray = contentArray.slice(-100);
+            const previewObj = {
+                content: displayArray
+            };
+            previewContent.innerHTML = formatJSON(previewObj);
+            previewContent.scrollTop = previewContent.scrollHeight;
+            previewCount.textContent = `${contentArray.length} archivo${contentArray.length !== 1 ? 's' : ''}`;
+        }
+
+        async function processFiles(fileData) {
+            uploadZone.style.display = 'none';
+            progressContainer.classList.add('active');
+            previewCard.classList.add('active');
+            
+            const totalFiles = fileData.length;
+            const startTime = Date.now();
+            const contentArray = [];
+            
+            statTotal.textContent = totalFiles;
+            
+            const batchSize = 50;
+            
+            for (let i = 0; i < fileData.length; i += batchSize) {
+                const batch = fileData.slice(i, Math.min(i + batchSize, fileData.length));
+                
+                batch.forEach(item => {
+                    const relativePath = item.path.split('/').slice(1).join('/');
+                    if (relativePath && !relativePath.includes('.DS_Store')) {
+                        contentArray.push({
+                            path: relativePath
+                        });
+                    }
+                });
+                
+                const processedFiles = Math.min(i + batchSize, totalFiles);
+                const progress = Math.round((processedFiles / totalFiles) * 100);
+                progressFill.style.width = progress + '%';
+                progressFill.textContent = progress + '%';
+                
+                statProcessed.textContent = processedFiles;
+                
+                const elapsedSeconds = (Date.now() - startTime) / 1000;
+                const speed = Math.round(processedFiles / elapsedSeconds);
+                statSpeed.textContent = speed;
+                
+                updatePreview(contentArray);
+                
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+            
+            generatedJSON = {
+                content: contentArray
+            };
+            
+            setTimeout(() => {
+                progressContainer.classList.remove('active');
+                resultSection.classList.add('active');
+                updatePreview(contentArray);
+            }, 300);
+        }
+
+        downloadBtn.addEventListener('click', () => {
+            if (!generatedJSON) return;
+            
+            const jsonString = JSON.stringify(generatedJSON, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'contents.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
